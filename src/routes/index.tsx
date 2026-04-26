@@ -1,26 +1,130 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+
+import { SERVICES, REFRESH_INTERVAL_MS } from "@/config/services";
+import { fetchAllServices } from "@/lib/status-api";
+import type { Incident, ServiceState, ServiceStatus } from "@/types/status";
+import { OverallStatusBanner } from "@/components/status/OverallStatusBanner";
+import { ServiceCard } from "@/components/status/ServiceCard";
+import { IncidentList } from "@/components/status/IncidentList";
 
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Status — Disponibilidade dos serviços" },
+      {
+        name: "description",
+        content: "Acompanhe em tempo real o status, uptime e incidentes dos nossos serviços.",
+      },
+      { property: "og:title", content: "Status — Disponibilidade dos serviços" },
+      {
+        property: "og:description",
+        content: "Acompanhe em tempo real o status, uptime e incidentes dos nossos serviços.",
+      },
+    ],
+  }),
+  component: StatusPage,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+function computeOverall(services: ServiceState[] | undefined): ServiceStatus {
+  if (!services || services.length === 0) return "unknown";
+  if (services.some((s) => s.data.status === "down")) return "down";
+  if (services.some((s) => s.data.status === "degraded")) return "degraded";
+  if (services.every((s) => s.data.status === "operational")) return "operational";
+  return "unknown";
 }
 
-function Index() {
-  return <PlaceholderIndex />;
+function StatusPage() {
+  const query = useQuery({
+    queryKey: ["status", "all"],
+    queryFn: () => fetchAllServices(SERVICES),
+    refetchInterval: REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: true,
+  });
+
+  const services = query.data;
+  const overall = computeOverall(services);
+  const updatedAt = query.dataUpdatedAt ? new Date(query.dataUpdatedAt) : null;
+
+  const allIncidents = useMemo(() => {
+    if (!services) return [];
+    const merged: Array<Incident & { serviceName: string }> = [];
+    for (const s of services) {
+      for (const inc of s.data.incidents) {
+        merged.push({ ...inc, serviceName: s.name });
+      }
+    }
+    return merged.sort(
+      (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime(),
+    );
+  }, [services]);
+
+  const usingMocks = services?.some((s) => s.isFallback);
+
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
+        <header className="mb-8 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-foreground" aria-hidden />
+            <span className="text-base font-semibold text-foreground">Status</span>
+          </div>
+          <a
+            href="#"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Site institucional →
+          </a>
+        </header>
+
+        <OverallStatusBanner
+          overall={overall}
+          updatedAt={updatedAt}
+          isRefreshing={query.isFetching}
+          onRefresh={() => query.refetch()}
+        />
+
+        {usingMocks && (
+          <p className="mt-4 text-xs text-muted-foreground">
+            Exibindo dados de demonstração. Configure as URLs de health check em{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">src/config/services.ts</code>
+            .
+          </p>
+        )}
+
+        <section className="mt-8">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Serviços
+          </h2>
+          <div className="space-y-4">
+            {(services ?? SERVICES.map((s) => null)).map((service, i) =>
+              service ? (
+                <ServiceCard key={service.id} service={service} />
+              ) : (
+                <div
+                  key={i}
+                  className="h-40 animate-pulse rounded-xl border border-border bg-card"
+                />
+              ),
+            )}
+          </div>
+        </section>
+
+        <section className="mt-12">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Incidentes recentes
+          </h2>
+          <IncidentList incidents={allIncidents} />
+        </section>
+
+        <footer className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground">
+          <span>Atualização automática a cada 60 segundos</span>
+          <a href="#" className="transition-colors hover:text-foreground">
+            Inscrever-se em atualizações
+          </a>
+        </footer>
+      </div>
+    </main>
+  );
 }
