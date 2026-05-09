@@ -1,45 +1,40 @@
 import type { ServiceConfig } from "@/types/status";
 
 /**
- * Configure here the 5 services to display on the status page.
- * Replace `healthCheckUrl` with your real endpoints. Each endpoint must return
- * a JSON body matching `HealthCheckResponse` (see src/types/status.ts).
- *
- * While URLs start with "REPLACE_ME", the page will render with mocked data
- * so you can preview the layout in development.
+ * Configure here the services to display on the status page.
  */
 export const SERVICES: ServiceConfig[] = [
   {
-    id: "company-site",
-    name: "Site Institucional",
-    description: "Site principal da empresa",
-    healthCheckUrl: "REPLACE_ME_COMPANY_SITE",
+    id: "arxdevs-site",
+    name: "ArxDevs Institutional",
+    description: "Site principal — Nexus da ArxDevs",
+    healthCheckUrl: "https://arxdevs.xyz/api/health-check",
   },
   {
-    id: "product-a-site",
-    name: "Site — Produto A",
-    description: "Site público do Produto A",
-    healthCheckUrl: "REPLACE_ME_PRODUCT_A_SITE",
+    id: "shield-site",
+    name: "Shield Security",
+    description: "Sistema de proteção e dashboard",
+    healthCheckUrl: "https://shield.arxdevs.xyz/api/health-check",
   },
   {
-    id: "product-a-bot",
-    name: "Bot Discord — Produto A",
-    description: "Bot do Discord do Produto A",
-    healthCheckUrl: "REPLACE_ME_PRODUCT_A_BOT",
+    id: "shield-bot",
+    name: "Shield Bot",
+    description: "Monitoramento em tempo real",
+    healthCheckUrl: "https://shield.arxdevs.xyz/api/bot-status",
   },
   {
-    id: "product-b-site",
-    name: "Site — Produto B",
-    description: "Site público do Produto B",
-    healthCheckUrl: "REPLACE_ME_PRODUCT_B_SITE",
+    id: "aegis-site",
+    name: "Aegis Ecosystem",
+    description: "Status operacional do ecossistema Aegis",
+    healthCheckUrl: "https://aegis.arxdevs.xyz/api/health-check",
   },
   {
-    id: "product-b-bot",
-    name: "Bot Discord — Produto B",
-    description: "Bot do Discord do Produto B",
-    healthCheckUrl: "REPLACE_ME_PRODUCT_B_BOT",
+    id: "aegis-bot",
+    name: "Aegis Bot",
+    description: "Status específico do AegisBot",
+    healthCheckUrl: "https://aegis.arxdevs.xyz/api/bot-status",
   },
 ];
 
-/** Auto-refresh interval in milliseconds. */
+/** Auto-refresh interval (1 minute) */
 export const REFRESH_INTERVAL_MS = 60_000;

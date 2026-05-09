@@ -29,8 +29,7 @@ export function buildMockHealth(serviceId: string): HealthCheckResponse {
     d.setDate(today.getDate() - i);
     const r = rand();
     let status: ServiceStatus = "operational";
-    if (r > 0.985) status = "down";
-    else if (r > 0.96) status = "degraded";
+    // Probabilidade 0 de falha no mock
     if (status === "operational") okDays++;
     history.push({ date: formatDate(d), status });
   }

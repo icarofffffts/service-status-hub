@@ -12,15 +12,15 @@ import { IncidentList } from "@/components/status/IncidentList";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Status — Disponibilidade dos serviços" },
+      { title: "ArxDevs Service Status" },
       {
         name: "description",
-        content: "Acompanhe em tempo real o status, uptime e incidentes dos nossos serviços.",
+        content: "Acompanhe em tempo real a disponibilidade dos serviços ArxDevs.",
       },
-      { property: "og:title", content: "Status — Disponibilidade dos serviços" },
+      { property: "og:title", content: "ArxDevs Service Status" },
       {
         property: "og:description",
-        content: "Acompanhe em tempo real o status, uptime e incidentes dos nossos serviços.",
+        content: "Acompanhe em tempo real a disponibilidade dos serviços ArxDevs.",
       },
     ],
   }),
@@ -46,6 +46,7 @@ function StatusPage() {
   const services = query.data;
   const overall = computeOverall(services);
   const updatedAt = query.dataUpdatedAt ? new Date(query.dataUpdatedAt) : null;
+  const isAllLive = services ? services.every((s) => !s.isFallback) : true;
 
   const allIncidents = useMemo(() => {
     if (!services) return [];
@@ -66,32 +67,40 @@ function StatusPage() {
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
         <header className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-foreground" aria-hidden />
-            <span className="text-base font-semibold text-foreground">Status</span>
+          <div className="flex items-center gap-3">
+            <img 
+              src="https://shield.arxdevs.xyz/logo.png" 
+              alt="ArxDevs Logo" 
+              className="h-8 w-8 object-contain"
+            />
+            <span className="text-xl font-bold tracking-tight text-foreground">ArxDevs <span className="text-muted-foreground font-normal">Status</span></span>
           </div>
           <a
-            href="#"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            href="https://arxdevs.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Site institucional →
+            ArxDevs Oficial →
           </a>
         </header>
+
+        <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-muted/50 shadow-sm">
+          <img 
+            src="https://shield.arxdevs.xyz/banner-hero-new.png" 
+            alt="ArxDevs Banner" 
+            className="aspect-[3/1] w-full object-cover opacity-90 transition-opacity hover:opacity-100"
+          />
+        </div>
 
         <OverallStatusBanner
           overall={overall}
           updatedAt={updatedAt}
           isRefreshing={query.isFetching}
+          isLive={isAllLive}
           onRefresh={() => query.refetch()}
         />
 
-        {usingMocks && (
-          <p className="mt-4 text-xs text-muted-foreground">
-            Exibindo dados de demonstração. Configure as URLs de health check em{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">src/config/services.ts</code>
-            .
-          </p>
-        )}
 
         <section className="mt-8">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

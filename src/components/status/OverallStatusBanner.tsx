@@ -6,6 +6,7 @@ interface Props {
   overall: ServiceStatus;
   updatedAt: Date | null;
   isRefreshing: boolean;
+  isLive?: boolean;
   onRefresh: () => void;
 }
 
@@ -53,10 +54,12 @@ export function OverallStatusBanner({ overall, updatedAt, isRefreshing, onRefres
           />
           <span className={cn("relative inline-flex h-3 w-3 rounded-full", DOT[overall])} />
         </span>
-        <h2 className="text-lg font-semibold text-foreground sm:text-xl">{HEADLINE[overall]}</h2>
+        <div className="flex flex-col gap-0.5">
+          <h2 className="text-lg font-semibold text-foreground sm:text-xl">{HEADLINE[overall]}</h2>
+          <span className="text-[10px] text-muted-foreground uppercase font-medium">Atualizado às {formatTime(updatedAt)}</span>
+        </div>
       </div>
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
-        <span>Atualizado às {formatTime(updatedAt)}</span>
         <button
           type="button"
           onClick={onRefresh}
