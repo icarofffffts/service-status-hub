@@ -11,9 +11,15 @@ export const SERVICES: ServiceConfig[] = [
     healthCheckUrl: "https://arxdevs.xyz/api/health-check",
   },
   {
+    id: "auth-portal",
+    name: "Auth Portal",
+    description: "Autenticacao centralizada — login unico",
+    healthCheckUrl: "https://auth.arxdevs.xyz/api/health-check",
+  },
+  {
     id: "shield-site",
     name: "Shield Security",
-    description: "Sistema de proteção e dashboard",
+    description: "Sistema de protecao e dashboard",
     healthCheckUrl: "https://shield.arxdevs.xyz/api/health-check",
   },
   {
@@ -31,7 +37,7 @@ export const SERVICES: ServiceConfig[] = [
   {
     id: "aegis-bot",
     name: "Aegis Bot",
-    description: "Status específico do AegisBot",
+    description: "Status especifico do AegisBot",
     healthCheckUrl: "https://aegis.arxdevs.xyz/api/bot-status",
   },
 ];
