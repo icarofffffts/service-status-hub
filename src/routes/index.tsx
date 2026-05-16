@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Shield, Activity, Server, Bot, Key } from "lucide-react";
 
 import { SERVICES, REFRESH_INTERVAL_MS } from "@/config/services";
 import { fetchAllServices } from "@/lib/status-api";
@@ -10,31 +9,18 @@ import { OverallStatusBanner } from "@/components/status/OverallStatusBanner";
 import { ServiceCard } from "@/components/status/ServiceCard";
 import { IncidentList } from "@/components/status/IncidentList";
 
-const CATEGORY_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
-  site: Server,
-  bot: Bot,
-  auth: Key,
-  default: Activity,
-};
-
-function getCategory(id: string): string {
-  if (id.includes("bot")) return "bot";
-  if (id.includes("auth")) return "auth";
-  return "site";
-}
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ARX Ecosystem Status" },
+      { title: "ArxDevs Service Status" },
       {
         name: "description",
-        content: "Status em tempo real de todos os servicos do ecossistema ARX.",
+        content: "Acompanhe em tempo real a disponibilidade dos serviços ArxDevs.",
       },
-      { property: "og:title", content: "ARX Ecosystem Status" },
+      { property: "og:title", content: "ArxDevs Service Status" },
       {
         property: "og:description",
-        content: "Status em tempo real de todos os servicos do ecossistema ARX.",
+        content: "Acompanhe em tempo real a disponibilidade dos serviços ArxDevs.",
       },
     ],
   }),
@@ -75,36 +61,38 @@ function StatusPage() {
     );
   }, [services]);
 
+  const usingMocks = services?.some((s) => s.isFallback);
+
   return (
     <main className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
-        {/* Header */}
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
+        <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-              AX
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                ARX Ecosystem
-              </h1>
-              <p className="text-xs text-muted-foreground">Status em tempo real</p>
-            </div>
+            <img 
+              src="https://shield.arxdevs.xyz/logo.png" 
+              alt="ArxDevs Logo" 
+              className="h-8 w-8 object-contain"
+            />
+            <span className="text-xl font-bold tracking-tight text-foreground">ArxDevs <span className="text-muted-foreground font-normal">Status</span></span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2">
-              <span className={`absolute inline-flex h-2 w-2 animate-ping rounded-full opacity-40 ${overall === "operational" ? "bg-status-operational" : overall === "down" ? "bg-status-down" : "bg-status-degraded"}`} />
-              <span className={`relative inline-flex h-2 w-2 rounded-full ${overall === "operational" ? "bg-status-operational" : overall === "down" ? "bg-status-down" : "bg-status-degraded"}`} />
-            </span>
-            <span className="text-xs font-medium text-muted-foreground">
-              {updatedAt
-                ? `Atualizado ${updatedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`
-                : "Carregando..."}
-            </span>
-          </div>
+          <a
+            href="https://arxdevs.xyz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            ArxDevs Oficial →
+          </a>
         </header>
 
-        {/* Overall Status */}
+        <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-muted/50 shadow-sm">
+          <img 
+            src="https://shield.arxdevs.xyz/banner-hero-new.png" 
+            alt="ArxDevs Banner" 
+            className="aspect-[3/1] w-full object-cover opacity-90 transition-opacity hover:opacity-100"
+          />
+        </div>
+
         <OverallStatusBanner
           overall={overall}
           updatedAt={updatedAt}
@@ -113,42 +101,37 @@ function StatusPage() {
           onRefresh={() => query.refetch()}
         />
 
-        {/* Services Grid */}
+
         <section className="mt-8">
-          <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Activity className="h-3 w-3" />
-            Servicos monitorados
-            <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium">
-              {SERVICES.length} ativos
-            </span>
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Serviços
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(services ?? SERVICES.map(() => null)).map((service, i) =>
+          <div className="space-y-4">
+            {(services ?? SERVICES.map((s) => null)).map((service, i) =>
               service ? (
                 <ServiceCard key={service.id} service={service} />
               ) : (
                 <div
                   key={i}
-                  className="h-36 animate-pulse rounded-xl border border-border bg-card"
+                  className="h-40 animate-pulse rounded-xl border border-border bg-card"
                 />
               ),
             )}
           </div>
         </section>
 
-        {/* Incidents */}
-        <section className="mt-10">
-          <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <Shield className="h-3 w-3" />
+        <section className="mt-12">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Incidentes recentes
           </h2>
           <IncidentList incidents={allIncidents} />
         </section>
 
-        {/* Footer */}
-        <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5 text-xs text-muted-foreground">
-          <span>Atualizacao automatica a cada 60 segundos</span>
-          <span>ARX DEVS &copy; {new Date().getFullYear()}</span>
+        <footer className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground">
+          <span>Atualização automática a cada 60 segundos</span>
+          <a href="#" className="transition-colors hover:text-foreground">
+            Inscrever-se em atualizações
+          </a>
         </footer>
       </div>
     </main>
